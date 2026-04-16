@@ -121,9 +121,32 @@
             font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
+            z-index: 2101;
         }
 
         .close-lightbox:hover {
+            color: #ffdd57;
+        }
+
+        /* Slideshow Buttons */
+        .prev-btn, .next-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            padding: 16px;
+            transition: 0.3s;
+            z-index: 2100;
+        }
+
+        .prev-btn { left: 10px; }
+        .next-btn { right: 10px; }
+
+        .prev-btn:hover, .next-btn:hover {
             color: #ffdd57;
         }
 
@@ -197,15 +220,17 @@
     <section id="pictures">
         <h2>Picture Gallery</h2>
         <div class="gallery">
-            <img src="https://cdn.pixabay.com/photo/2025/04/12/20/18/easter-bag-9530796_1280.jpg" alt="Nature Image">
-            <img src="https://cdn.pixabay.com/photo/2025/04/12/20/18/easter-bag-9530796_1280.jpg" alt="Nature Image">
-            <img src="https://cdn.pixabay.com/photo/2025/04/12/20/18/easter-bag-9530796_1280.jpg" alt="Nature Image">
+            <img src="https://cdn.pixabay.com/photo/2025/04/12/20/18/easter-bag-9530796_1280.jpg" alt="Nature Image 1">
+            <img src="https://cdn.pixabay.com/photo/2024/02/14/16/45/pampas-grass-8573859_1280.jpg" alt="Nature Image 2">
+            <img src="https://cdn.pixabay.com/photo/2023/10/18/15/43/sunset-8324516_1280.jpg" alt="Nature Image 3">
         </div>
     </section>
 
     <div id="lightbox" class="lightbox">
         <span class="close-lightbox">&times;</span>
+        <span class="prev-btn">&#10094;</span> 
         <img class="lightbox-content" id="lightbox-img">
+        <span class="next-btn">&#10095;</span>
     </div>
 
     <section id="videos">
@@ -239,16 +264,44 @@
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = document.getElementById('lightbox-img');
         const closeBtn = document.querySelector('.close-lightbox');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
         const galleryImages = document.querySelectorAll('.gallery img');
 
+        let currentIndex = 0;
+
+        // Function to update the image in the lightbox
+        function showImage(index) {
+            // Loop logic
+            if (index >= galleryImages.length) {
+                currentIndex = 0; 
+            } else if (index < 0) {
+                currentIndex = galleryImages.length - 1; 
+            } else {
+                currentIndex = index;
+            }
+            lightboxImg.src = galleryImages[currentIndex].src;
+        }
+
         // Open Lightbox when any image is clicked
-        galleryImages.forEach(image => {
+        galleryImages.forEach((image, index) => {
             image.addEventListener('click', () => {
                 lightbox.style.display = 'flex';
-                lightboxImg.src = image.src;
-                // Prevent scrolling on the body while lightbox is open
                 document.body.style.overflow = 'hidden';
+                showImage(index);
             });
+        });
+
+        // Next Button functionality
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevents clicking the button from closing the lightbox
+            showImage(currentIndex + 1);
+        });
+
+        // Previous Button functionality
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevents clicking the button from closing the lightbox
+            showImage(currentIndex - 1);
         });
 
         // Close Lightbox
@@ -257,11 +310,23 @@
             document.body.style.overflow = 'auto';
         });
 
-        // Close Lightbox when clicking outside the image
+        // Close Lightbox when clicking the dark background
         lightbox.addEventListener('click', (e) => {
-            if (e.target !== lightboxImg) {
+            if (e.target === lightbox) {
                 lightbox.style.display = 'none';
                 document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Keyboard Support (Optional but great for UX)
+        document.addEventListener('keydown', (e) => {
+            if (lightbox.style.display === 'flex') {
+                if (e.key === "ArrowRight") showImage(currentIndex + 1);
+                if (e.key === "ArrowLeft") showImage(currentIndex - 1);
+                if (e.key === "Escape") {
+                    lightbox.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
             }
         });
     </script>
